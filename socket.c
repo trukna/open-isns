@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <fcntl.h>
 
 #include "config.h"
@@ -2203,6 +2204,8 @@ isns_get_address_list(const char *addrspec, const char *port,
 {
 	struct addrinfo hints, *found = NULL, *res = NULL;
 	char	*copy = NULL, *host = NULL, *s;
+	struct in_addr addr4;
+	struct in6_addr addr6;
 	int	rv, did_fallback = 0;
 
 	memset(&hints, 0, sizeof(hints));
@@ -2247,6 +2250,14 @@ isns_get_address_list(const char *addrspec, const char *port,
 		/* Just wildcard */
 		res = make_addrinfo_any(af_hint, sock_type);
 		goto out;
+	}
+
+	/* Numeric addresses, including loopback, need no family filtering. */
+	if (host &&
+	    (inet_pton(AF_INET, host, &addr4) == 1 ||
+	     inet_pton(AF_INET6, host, &addr6) == 1)) {
+		hints.ai_flags &= ~AI_ADDRCONFIG;
+		hints.ai_flags |= AI_NUMERICHOST;
 	}
 
 	hints.ai_family = af_hint;

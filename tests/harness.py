@@ -318,6 +318,7 @@ def isns_start_server(server_config):
     vprint('*** Starting server (logging to %s)' % logfile)
 
     cmd = ['%s/isnsd' % get_bindir(),
+           '-4',
            '-c', server_config.path,
            '-f',
            '-d', 'all' ]
@@ -422,6 +423,7 @@ def run_client(client_config, args):
     logfile = get_logfile_from_config(client_config.path)
 
     cmd = ['%s/isnsadm' % get_bindir(),
+           '-4',
            '-c', client_config.path] + args
     exit_val = run_cmd(cmd, logfile)
     return (logfile, exit_val)
